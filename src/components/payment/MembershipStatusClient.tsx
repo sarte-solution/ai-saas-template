@@ -1,0 +1,143 @@
+'use client'
+
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { MEMBERSHIP_STATUS, formatPrice } from '@/constants/payment'
+import { useUserMembership } from '@/hooks/use-membership'
+import { useUser } from '@clerk/nextjs'
+import { Calendar, Shield } from 'lucide-react'
+
+export function MembershipStatusClient() {
+  const { user } = useUser()
+  const { membershipStatus, isLoading } = useUserMembership(user?.id)
+
+  if (isLoading) {
+    return <MembershipStatusSkeleton />
+  }
+
+  if (!membershipStatus?.hasActiveMembership) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            会员状态
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="text-muted-foreground mb-4">
+              您当前没有有效的会员计划
+            </div>
+            <Badge variant="secondary">免费用户</Badge>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const { membership, currentPlan } = membershipStatus
+  const statusConfig =
+    MEMBERSHIP_STATUS[membership?.status as keyof typeof MEMBERSHIP_STATUS]
+  const endDate = membership?.endDate ? new Date(membership.endDate) : null
+  const daysRemaining = endDate
+    ? Math.max(
+        0,
+        Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      )
+    : 0
+
+  return (
+    <div className="space-y-6">
+      {/* 会员信息卡片 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              会员状态
+            </div>
+            <Badge className={statusConfig?.color}>
+              {statusConfig?.labelZh}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">当前计划</p>
+              <p className="font-medium">
+                {currentPlan?.nameZh || currentPlan?.name}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">计费周期</p>
+              <p className="font-medium">
+                {membership?.durationType === 'yearly' ? '年付' : '月付'}
+              </p>
+            </div>
+          </div>
+
+          {endDate && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-muted-foreground">到期时间</p>
+                <div className="flex items-center gap-1 text-sm">
+                  <Calendar className="h-4 w-4" />
+                  剩余 {daysRemaining} 天
+                </div>
+              </div>
+              <p className="font-medium">
+                {endDate.toLocaleDateString('zh-CN')}
+              </p>
+            </div>
+          )}
+
+          {membership?.purchaseAmount && (
+            <div>
+              <p className="text-sm text-muted-foreground">支付金额</p>
+              <p className="font-medium">
+                {formatPrice(
+                  Number(membership.purchaseAmount),
+                  membership.currency as 'USD' | 'CNY'
+                )}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function MembershipStatusSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            会员状态
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">当前计划</p>
+              <Skeleton className="h-6 w-20" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">计费周期</p>
+              <Skeleton className="h-6 w-16" />
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">到期时间</p>
+            <Skeleton className="h-6 w-32" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
