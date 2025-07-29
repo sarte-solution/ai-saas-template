@@ -25,8 +25,8 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# 构建应用
-RUN pnpm run build
+# 构建应用 - 跳过环境变量验证
+RUN pnpm run build:docker
 
 # 运行阶段
 FROM base AS runner

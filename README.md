@@ -331,7 +331,22 @@ Supports multiple PostgreSQL providers:
 
 ## 🚀 Deployment Guide
 
-### Vercel Deployment (Recommended)
+### Coolify Deployment (Recommended for Self-Hosting)
+
+Deploy easily with Coolify using Nixpacks:
+
+1. **Quick Setup**: Project includes `nixpacks.toml` for automatic configuration
+2. **Environment Variables**: Copy from `.env.coolify` to your Coolify dashboard
+3. **One-Click Deploy**: Coolify handles the rest automatically
+
+```bash
+# Run the fix script if you encounter issues
+./scripts/fix-coolify-deployment.sh
+```
+
+📖 **[Complete Coolify Deployment Guide](docs/COOLIFY_DEPLOYMENT.md)**
+
+### Vercel Deployment
 
 1. Connect GitHub repository to Vercel
 2. Configure environment variables
